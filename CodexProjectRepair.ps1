@@ -69,7 +69,13 @@ $log = New-Object System.Windows.Forms.TextBox
 $log.Dock = 'Bottom'; $log.Height = 150; $log.Multiline = $true; $log.ReadOnly = $true
 $log.ScrollBars = 'Vertical'; $log.Font = New-Object System.Drawing.Font('Consolas', 9)
 
-function Write-Log([string]$Message) { $log.AppendText("$(Get-Date -Format HH:mm:ss)  $Message`r`n") }
+function Write-Log([string]$Message) {
+    $line = "$(Get-Date -Format HH:mm:ss)  $Message`r`n"
+    $log.Text = $line + $log.Text
+    $log.SelectionStart = 0
+    $log.SelectionLength = 0
+    $log.ScrollToCaret()
+}
 function Write-AuditResult($Report) {
     $issues = @($Report.issues)
     $repairable = @($issues | Where-Object { $_.severity -eq 'repair' -or $_.code -eq 'UNASSIGNED_UNIQUE_ROOT' })

@@ -13,6 +13,7 @@ test('Windows GUI exposes audit, conservative repair, and restore through the CL
   assert.match(script, /repair/);
   assert.match(script, /restore/);
   assert.match(script, /Write-AuditResult \$report/);
+  assert.match(script, /\$log\.Text\s*=.*\$log\.Text/);
   assert.match(script, /ChatGPT/);
   assert.match(script, /app-server/);
   assert.match(script, /OpenAI\.Codex_2p2nqsd0c76g0!App/);
