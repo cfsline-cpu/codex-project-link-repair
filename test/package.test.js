@@ -20,9 +20,22 @@ test('Windows GUI exposes audit, conservative repair, and restore through the CL
 });
 
 test('launcher and release metadata exist', () => {
-  for (const name of ['CodexProjectRepair.vbs', 'CodexProjectRepair.cmd', 'ui.zh-CN.json', 'README.md', 'LICENSE', 'VERSION', 'build-release.ps1']) {
+  for (const name of ['CodexProjectRepair.vbs', 'CodexProjectRepair.cmd', 'ui.zh-CN.json', 'README.md', 'LICENSE', 'VERSION', 'build-release.ps1', 'scripts/build-desktop-exe.ps1']) {
     assert.ok(fs.statSync(path.join(root, name)).size > 0, `${name} is missing or empty`);
   }
+});
+
+test('desktop deployment builder creates a single IExpress executable', () => {
+  const builder = fs.readFileSync(path.join(root, 'scripts', 'build-desktop-exe.ps1'), 'utf8');
+  assert.match(builder, /iexpress\.exe/i);
+  assert.match(builder, /CodexProjectRepair\.exe/i);
+  assert.match(builder, /CodexProjectRepair\.vbs/i);
+  assert.match(builder, /cli\.js/i);
+  assert.match(builder, /core\.js/i);
+  assert.match(builder, /Replace\([^\n]+False[^\n]+True/);
+  const releaseBuilder = fs.readFileSync(path.join(root, 'build-release.ps1'), 'utf8');
+  assert.match(releaseBuilder, /build-desktop-exe\.ps1/);
+  assert.match(releaseBuilder, /CodexProjectRepair\.exe/);
 });
 
 test('launcher hides PowerShell and GUI loads Chinese labels from UTF-8 JSON', () => {

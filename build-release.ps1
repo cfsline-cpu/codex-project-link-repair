@@ -16,6 +16,13 @@ foreach ($file in $files) {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot $file) -Destination $destination
 }
 Compress-Archive -Path $stage -DestinationPath $zip -CompressionLevel Optimal
-$hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash.ToLowerInvariant()
-Set-Content -Encoding ascii -Path (Join-Path $OutputDirectory 'SHA256SUMS.txt') -Value "$hash  $name.zip"
+$desktopExe = Join-Path $OutputDirectory 'CodexProjectRepair.exe'
+& (Join-Path $PSScriptRoot 'scripts\build-desktop-exe.ps1') -OutputPath $desktopExe | Out-Null
+$zipHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash.ToLowerInvariant()
+$exeHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $desktopExe).Hash.ToLowerInvariant()
+Set-Content -Encoding ascii -Path (Join-Path $OutputDirectory 'SHA256SUMS.txt') -Value @(
+    "$zipHash  $name.zip"
+    "$exeHash  CodexProjectRepair.exe"
+)
 Write-Output $zip
+Write-Output $desktopExe
