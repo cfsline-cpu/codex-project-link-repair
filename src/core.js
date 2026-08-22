@@ -42,7 +42,7 @@ function audit(codexHome) {
       issues.push({ code: 'SQLITE_PROJECT_MISSING', severity: 'repair', projectId: project.id, projectName: project.name });
     }
     for (const root of project.rootPaths || []) {
-      roots.push({ projectId: project.id, projectName: project.name, root, normalized: normalizePath(root) });
+      if (fs.existsSync(root)) roots.push({ projectId: project.id, projectName: project.name, root, normalized: normalizePath(root) });
       if (!sqliteRoots.some((row) => row.project_id === project.id && normalizePath(row.path) === normalizePath(root))) {
         issues.push({ code: 'SQLITE_ROOT_MISSING', severity: 'repair', projectId: project.id, projectName: project.name, root });
       }
@@ -57,6 +57,7 @@ function audit(codexHome) {
 
   for (const thread of threads) {
     const assignment = assignments[thread.id];
+    if (assignment && !projects[assignment.projectId]) continue;
     if (assignment && thread.project_id !== assignment.projectId) {
       issues.push({
         code: 'SQLITE_ASSIGNMENT_MISMATCH', severity: 'repair', threadId: thread.id,
@@ -65,7 +66,7 @@ function audit(codexHome) {
       });
       continue;
     }
-    if (assignment || projectless.has(thread.id) || thread.project_id || thread.thread_source !== 'user') continue;
+    if (assignment || projectless.has(thread.id) || thread.project_id || thread.thread_source !== 'user' || !fs.existsSync(thread.cwd)) continue;
     const cwd = normalizePath(thread.cwd);
     const matches = roots.filter((item) => cwd === item.normalized || cwd.startsWith(`${item.normalized}/`));
     const projectIds = [...new Set(matches.map((item) => item.projectId))];
@@ -164,7 +165,9 @@ function repair(codexHome) {
         deleteRoots.run(id);
         (project.rootPaths || []).forEach((root, position) => insertRoot.run(id, position, root));
       }
-      for (const [id, assignment] of Object.entries(assignments)) updateThread.run(assignment.projectId, id);
+      for (const [id, assignment] of Object.entries(assignments)) {
+        if (state['local-projects'][assignment.projectId]) updateThread.run(assignment.projectId, id);
+      }
       for (const id of state['projectless-thread-ids']) updateThread.run(null, id);
       db.exec('commit');
     } catch (error) {

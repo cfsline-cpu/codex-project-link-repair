@@ -10,9 +10,12 @@ const { audit, repair, restoreLatest } = require('../src/core');
 function fixture() {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'codex-project-repair-'));
   const projectId = 'project-a';
+  const projectRoot = path.join(home, 'Project A');
+  fs.mkdirSync(projectRoot);
+  fs.mkdirSync(path.join(projectRoot, 'src'));
   const state = {
     'local-projects': {
-      [projectId]: { id: projectId, name: 'Project A', rootPaths: ['D:\\Project A'], createdAt: 1, updatedAt: 2 },
+      [projectId]: { id: projectId, name: 'Project A', rootPaths: [projectRoot], createdAt: 1, updatedAt: 2 },
     },
     'project-order': [projectId],
     'thread-project-assignments': {
@@ -30,9 +33,9 @@ function fixture() {
     create table threads (id text primary key, title text not null, cwd text not null, thread_source text, archived integer not null default 0, project_id text);
   `);
   const insert = db.prepare('insert into threads (id, title, cwd, thread_source, project_id) values (?, ?, ?, ?, ?)');
-  insert.run('explicit', 'Explicit', 'D:\\Project A', 'user', null);
-  insert.run('inferred', 'Inferred', 'D:\\Project A\\src', 'user', null);
-  insert.run('independent', 'Independent', 'D:\\Project A', 'user', null);
+  insert.run('explicit', 'Explicit', projectRoot, 'user', null);
+  insert.run('inferred', 'Inferred', path.join(projectRoot, 'src'), 'user', null);
+  insert.run('independent', 'Independent', projectRoot, 'user', null);
   insert.run('outside', 'Outside', 'C:\\Other', 'user', null);
   db.close();
   return home;
@@ -93,4 +96,28 @@ test('back-to-back repairs create distinct backups', () => {
   assert.notEqual(first.backupDir, second.backupDir);
   assert.ok(fs.existsSync(path.join(first.backupDir, 'manifest.json')));
   assert.ok(fs.existsSync(path.join(second.backupDir, 'manifest.json')));
+});
+
+test('audit does not infer a project whose root no longer exists', () => {
+  const home = fixture();
+  const state = JSON.parse(fs.readFileSync(path.join(home, '.codex-global-state.json'), 'utf8'));
+  fs.rmSync(state['local-projects']['project-a'].rootPaths[0], { recursive: true });
+  const report = audit(home);
+  assert.ok(!report.issues.some((issue) => issue.code === 'UNASSIGNED_UNIQUE_ROOT'));
+});
+
+test('repair does not write an assignment to an unknown project', () => {
+  const home = fixture();
+  const stateFile = path.join(home, '.codex-global-state.json');
+  const state = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
+  state['thread-project-assignments'].ghost = { projectKind: 'local', projectId: 'missing-project' };
+  fs.writeFileSync(stateFile, JSON.stringify(state));
+  const db = new DatabaseSync(path.join(home, 'state_5.sqlite'));
+  db.prepare('insert into threads (id, title, cwd, thread_source, project_id) values (?, ?, ?, ?, ?)')
+    .run('ghost', 'Ghost', home, 'user', null);
+  db.close();
+  repair(home);
+  const checked = new DatabaseSync(path.join(home, 'state_5.sqlite'), { readOnly: true });
+  assert.equal(checked.prepare('select project_id from threads where id = ?').get('ghost').project_id, null);
+  checked.close();
 });
