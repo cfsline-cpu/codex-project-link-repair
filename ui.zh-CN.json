@@ -1,5 +1,5 @@
 {
-  "windowTitle": "Codex 项目关联修复工具 - 保守模式",
+  "windowTitle": "Codex 聊天和项目关联修复工具 - 修复聊天和项目绑定 - 保守模式",
   "dataDirectory": "Codex 数据目录：{0}",
   "auditButton": "审计",
   "repairButton": "保守修复并重启 Codex",

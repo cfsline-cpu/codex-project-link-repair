@@ -18,7 +18,7 @@ test('Windows GUI exposes audit, conservative repair, and restore through the CL
 });
 
 test('launcher and release metadata exist', () => {
-  for (const name of ['CodexProjectRepair.cmd', 'ui.zh-CN.json', 'README.md', 'LICENSE', 'VERSION', 'build-release.ps1']) {
+  for (const name of ['CodexProjectRepair.vbs', 'CodexProjectRepair.cmd', 'ui.zh-CN.json', 'README.md', 'LICENSE', 'VERSION', 'build-release.ps1']) {
     assert.ok(fs.statSync(path.join(root, name)).size > 0, `${name} is missing or empty`);
   }
 });
@@ -27,9 +27,17 @@ test('launcher hides PowerShell and GUI loads Chinese labels from UTF-8 JSON', (
   const launcher = fs.readFileSync(path.join(root, 'CodexProjectRepair.cmd'), 'utf8');
   const script = fs.readFileSync(path.join(root, 'CodexProjectRepair.ps1'), 'utf8');
   const labels = JSON.parse(fs.readFileSync(path.join(root, 'ui.zh-CN.json'), 'utf8'));
-  assert.match(launcher, /WindowStyle Hidden/i);
+  assert.match(launcher, /wscript\.exe/i);
   assert.match(script, /ui\.zh-CN\.json/);
   assert.equal(labels.auditButton, '审计');
   assert.equal(labels.repairButton, '保守修复并重启 Codex');
   assert.equal(labels.restoreButton, '恢复最近备份');
+  assert.equal(labels.windowTitle, 'Codex 聊天和项目关联修复工具 - 修复聊天和项目绑定 - 保守模式');
+});
+
+test('primary VBS launcher starts PowerShell without creating a console window', () => {
+  const launcher = fs.readFileSync(path.join(root, 'CodexProjectRepair.vbs'), 'utf8');
+  assert.match(launcher, /WScript\.Shell/i);
+  assert.match(launcher, /\.Run\s+command,\s*0,\s*False/i);
+  assert.match(launcher, /CodexProjectRepair\.ps1/i);
 });

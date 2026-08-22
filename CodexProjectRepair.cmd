@@ -1,2 +1,2 @@
 @echo off
-start "" powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "%~dp0CodexProjectRepair.ps1"
+start "" wscript.exe //nologo "%~dp0CodexProjectRepair.vbs"

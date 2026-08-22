@@ -10,7 +10,7 @@ Windows 图形工具，用于审计和修复 Codex 聊天与本地项目之间�
 
 ## 使用
 
-解压 Release ZIP，双击 `CodexProjectRepair.cmd`。
+解压 Release ZIP，双击 `CodexProjectRepair.vbs`。该入口不会创建 PowerShell 或命令提示符窗口。`CodexProjectRepair.cmd` 仅作为兼容入口保留，双击时仍可能短暂闪现命令提示符。
 
 - **审计**：只读取 `.codex-global-state.json` 与 `state_5.sqlite`。
 - **保守修复并重启 Codex**：关闭 Codex、备份索引、同步明确关联、验证并重启。
