@@ -70,6 +70,16 @@ $log.Dock = 'Bottom'; $log.Height = 150; $log.Multiline = $true; $log.ReadOnly =
 $log.ScrollBars = 'Vertical'; $log.Font = New-Object System.Drawing.Font('Consolas', 9)
 
 function Write-Log([string]$Message) { $log.AppendText("$(Get-Date -Format HH:mm:ss)  $Message`r`n") }
+function Write-AuditResult($Report) {
+    $issues = @($Report.issues)
+    $repairable = @($issues | Where-Object { $_.severity -eq 'repair' -or $_.code -eq 'UNASSIGNED_UNIQUE_ROOT' })
+    $manual = @($issues | Where-Object { $_.severity -eq 'manual' })
+    Write-Log ($script:Ui.auditResult -f $Report.summary.projects, $Report.summary.threads, $Report.summary.issues, $repairable.Count, $manual.Count)
+    if ($issues.Count -eq 0) { Write-Log $script:Ui.noIssues; return }
+    foreach ($issue in $issues) {
+        Write-Log ($script:Ui.issueLine -f $issue.code, $issue.threadId, $issue.suggestedProjectId, $issue.reason)
+    }
+}
 function Show-Report($Report) {
     $grid.Rows.Clear()
     foreach ($issue in $Report.issues) {
@@ -83,7 +93,7 @@ function Invoke-UiAction([scriptblock]$Action) {
     finally { $form.UseWaitCursor = $false }
 }
 
-$auditButton.Add_Click({ Invoke-UiAction { $report = Invoke-RepairCli 'audit'; Show-Report $report; Write-Log $script:Ui.auditCompleted } })
+$auditButton.Add_Click({ Invoke-UiAction { $report = Invoke-RepairCli 'audit'; Show-Report $report; Write-Log $script:Ui.auditCompleted; Write-AuditResult $report } })
 $repairButton.Add_Click({
     if ([System.Windows.Forms.MessageBox]::Show($script:Ui.repairPrompt, $script:Ui.repairConfirm, 'YesNo', 'Warning') -ne 'Yes') { return }
     Invoke-UiAction {

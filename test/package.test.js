@@ -12,6 +12,7 @@ test('Windows GUI exposes audit, conservative repair, and restore through the CL
   assert.match(script, /audit/);
   assert.match(script, /repair/);
   assert.match(script, /restore/);
+  assert.match(script, /Write-AuditResult \$report/);
   assert.match(script, /ChatGPT/);
   assert.match(script, /app-server/);
   assert.match(script, /OpenAI\.Codex_2p2nqsd0c76g0!App/);
@@ -33,6 +34,8 @@ test('launcher hides PowerShell and GUI loads Chinese labels from UTF-8 JSON', (
   assert.equal(labels.repairButton, '保守修复并重启 Codex');
   assert.equal(labels.restoreButton, '恢复最近备份');
   assert.equal(labels.windowTitle, 'Codex 聊天和项目关联修复工具 - 修复聊天和项目绑定 - 保守模式');
+  assert.match(labels.auditResult, /项目.*聊天.*异常.*可自动修复.*需人工处理/);
+  assert.equal(labels.noIssues, '未发现关联异常。');
 });
 
 test('primary VBS launcher starts PowerShell without creating a console window', () => {
