@@ -5,7 +5,7 @@ $version = (Get-Content (Join-Path $PSScriptRoot 'VERSION') -Raw).Trim()
 $name = "codex-project-link-repair-$version"
 $stage = Join-Path $OutputDirectory $name
 $zip = Join-Path $OutputDirectory "$name.zip"
-$files = @('CodexProjectRepair.cmd', 'CodexProjectRepair.ps1', 'README.md', 'LICENSE', 'VERSION', 'src\cli.js', 'src\core.js')
+$files = @('CodexProjectRepair.cmd', 'CodexProjectRepair.ps1', 'ui.zh-CN.json', 'README.md', 'LICENSE', 'VERSION', 'src\cli.js', 'src\core.js')
 
 New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 if (Test-Path $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }

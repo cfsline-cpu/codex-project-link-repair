@@ -1,0 +1,19 @@
+{
+  "windowTitle": "Codex 项目关联修复工具 - 保守模式",
+  "dataDirectory": "Codex 数据目录：{0}",
+  "auditButton": "审计",
+  "repairButton": "保守修复并重启 Codex",
+  "restoreButton": "恢复最近备份",
+  "columns": ["代码", "聊天 ID", "标题", "工作目录", "当前项目", "建议项目", "原因"],
+  "summary": "项目 {0} | 聊天 {1} | 异常 {2} | 保守模式",
+  "operationFailed": "操作失败",
+  "auditCompleted": "审计完成，未修改任何数据。",
+  "repairPrompt": "修复会先备份并关闭 Codex。是否继续？",
+  "repairConfirm": "确认修复",
+  "closingCodex": "正在关闭 Codex...",
+  "repairing": "正在备份、修复并验证...",
+  "repairCompleted": "修复完成。备份：{0}",
+  "restorePrompt": "恢复会关闭 Codex，并覆盖当前索引。是否继续？",
+  "restoreConfirm": "确认恢复",
+  "restored": "已恢复：{0}"
+}

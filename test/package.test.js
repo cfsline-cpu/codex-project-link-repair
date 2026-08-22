@@ -18,7 +18,18 @@ test('Windows GUI exposes audit, conservative repair, and restore through the CL
 });
 
 test('launcher and release metadata exist', () => {
-  for (const name of ['CodexProjectRepair.cmd', 'README.md', 'LICENSE', 'VERSION', 'build-release.ps1']) {
+  for (const name of ['CodexProjectRepair.cmd', 'ui.zh-CN.json', 'README.md', 'LICENSE', 'VERSION', 'build-release.ps1']) {
     assert.ok(fs.statSync(path.join(root, name)).size > 0, `${name} is missing or empty`);
   }
+});
+
+test('launcher hides PowerShell and GUI loads Chinese labels from UTF-8 JSON', () => {
+  const launcher = fs.readFileSync(path.join(root, 'CodexProjectRepair.cmd'), 'utf8');
+  const script = fs.readFileSync(path.join(root, 'CodexProjectRepair.ps1'), 'utf8');
+  const labels = JSON.parse(fs.readFileSync(path.join(root, 'ui.zh-CN.json'), 'utf8'));
+  assert.match(launcher, /WindowStyle Hidden/i);
+  assert.match(script, /ui\.zh-CN\.json/);
+  assert.equal(labels.auditButton, '审计');
+  assert.equal(labels.repairButton, '保守修复并重启 Codex');
+  assert.equal(labels.restoreButton, '恢复最近备份');
 });
